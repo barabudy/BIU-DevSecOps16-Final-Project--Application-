@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   postgres:
-    image: smart-home-postgres:latest
+    image: postgres:17.2-alpine
     container_name: smart_home_db
     ports:
       - "5432:5432"
@@ -11,6 +11,7 @@ services:
       POSTGRES_DB: smart-home-db
     volumes:
       - /home/smart-home-db-data:/var/lib/postgresql/data
+      - ./scripts:/docker-entrypoint-initdb.d
     deploy:
       resources:
         limits:
