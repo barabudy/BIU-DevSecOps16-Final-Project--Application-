@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  postgres:
+    image: smart-home-postgres:latest
+    container_name: smart_home_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: devsecops16
+      POSTGRES_PASSWORD: devsecops16
+      POSTGRES_DB: smart-home-db
+    volumes:
+      - /home/smart-home-db-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
