@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:17.2-alpine
+    environment:
+      POSTGRES_USER: devsecops16
+      POSTGRES_PASSWORD: devsecops16
+      POSTGRES_DB: smart-home-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - /home/smart-home-db-data:/var/lib/postgresql/data
+      - ./scripts:/docker-entrypoint-initdb.d
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "devsecops16"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smart_home_net
+
+  web:
+    image: python:3.11-slim
+    working_dir: /smart-home-app
+    volumes:
+      - .:/smart-home-app
+    ports:
+      - "5000:5000"
+    command: flask run --host=0.0.0.0 --port=5000
+    environment:
+      FLASK_APP: smart-home-app.py
+      FLASK_ENV: development
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
