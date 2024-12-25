@@ -28,9 +28,6 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
-  init_scripts:
-    driver: local
 
 secrets:
   postgres_user:
