@@ -5,6 +5,8 @@ services:
     ports:
       - "5432:5432"
     environment:
+      postgres_user: /run/secrets/postgres_user
+      postgres_password: /run/secrets/postgres_password
       POSTGRES_DB: smart-home-db
     volumes:
       - /home/smart-home-db-data:/var/lib/postgresql/data
