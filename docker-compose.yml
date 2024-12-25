@@ -11,6 +11,7 @@ services:
     volumes:
       - /home/smart-home-db-data:/var/lib/postgresql/data
       - ./scripts:/docker-entrypoint-initdb.d
+      - ./scripts/healthcheck.sh:/healthcheck.sh
     secrets:
       - postgres_user
       - postgres_password
@@ -20,14 +21,16 @@ services:
           memory: 512m
           cpus: "0.5"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $(cat /run/secrets/postgres_user)"]
+      test: ["CMD", "/healthcheck.sh"]
       interval: 30s
       timeout: 10s
       retries: 5
 
 volumes:
   postgres_data:
+    driver: local
   init_scripts:
+    driver: local
 
 secrets:
   postgres_user:
