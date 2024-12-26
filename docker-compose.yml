@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:17.2-alpine
+    container_name: smart_home_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: smart-home-db
+    volumes:
+      - /home/smart-home-db-data:/var/lib/postgresql/data
+      - ./scripts:/docker-entrypoint-initdb.d
+      - ./scripts/healthcheck.sh:/healthcheck.sh
+    secrets:
+      - postgres_user
+      - postgres_password
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+secrets:
+  postgres_user:
+    file: ./secrets/postgres_user
+  postgres_password:
+    file: ./secrets/postgres_password
