@@ -11,7 +11,7 @@ CREATE TABLE smart_sensors (
 -- Set a starting value for sensor_id of 1000
 ALTER SEQUENCE smart_sensors_sensor_id_seq RESTART WITH 1000;
 
--- Insert sample entries
+-- Insert sensor sample entries
 INSERT INTO smart_sensors (sensor_location, sensor_type, sensor_state, date_added) VALUES
 ('living room', 'light', 'on', '2024-12-25'),
 ('kids bedroom', 'thermostat', 'off', '2024-12-26'),
