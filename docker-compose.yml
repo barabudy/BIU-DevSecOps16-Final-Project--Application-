@@ -28,22 +28,22 @@ services:
       timeout: 10s
       retries: 5
 
-  backend:
-    image: python:3.11-slim
-    working_dir: /smart-home-app
-    volumes:
-      - ./backend:/smart-home-app
-    networks:
-      - smart-home-network
-    ports:
-      - "5001:5001"
-    command: flask run --host=0.0.0.0 --port=5001
-    environment:
-      FLASK_APP: smart-home-app.py
-      FLASK_ENV: development
-    depends_on:
-      db:
-        condition: service_healthy
+  # backend:
+  #   image: python:3.11-slim
+  #   working_dir: /smart-home-app
+  #   volumes:
+  #     - ./backend:/smart-home-app
+  #   networks:
+  #     - smart-home-network
+  #   ports:
+  #     - "5001:5001"
+  #   command: flask run --host=0.0.0.0 --port=5001
+  #   environment:
+  #     FLASK_APP: smart-home-app.py
+  #     FLASK_ENV: development
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
 
 networks:
   smart-home-network:
