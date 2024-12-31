@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 
 # Flask App Configuration
 app = Flask(__name__)
@@ -18,7 +17,6 @@ class Device(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     status = db.Column(db.String(20), nullable=False, default="off")
-    last_updated = db.Column(db.DateTime, nullable=False, default=datetime.now(datetime.timezone.utc))
 
     def to_dict(self):
         return {
@@ -54,7 +52,6 @@ def update_device(device_id):
         device.name = data['name']
     if 'status' in data:
         device.status = data['status']
-    device.last_updated = datetime.now(datetime.timezone.utc)
     db.session.commit()
     return jsonify(device.to_dict())
 
