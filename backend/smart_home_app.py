@@ -4,6 +4,9 @@ from datetime import datetime
 
 # Flask App Configuration
 app = Flask(__name__)
+### VERY IMPORTANT
+# 1 - UPDATE URI to ORACLE SERVER AND USE SECRETS
+# 2 - Obfuscate username and password using secrets & add them to the gitignore
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://devsecops16:devsecops16d@db:5432/smart-home-db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
