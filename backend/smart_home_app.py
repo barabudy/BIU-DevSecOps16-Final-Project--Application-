@@ -1,11 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from datetime import datetime # Used for date and time validation for sensors
 import logging
 
-DB_USER_FILE = "secrets/postgres_user"
-DB_PASSWORD_FILE = "secrets/postgres_password"
+logging.basicConfig(level=logging.ERROR)
+
 # Oracle VM2 IP
 DB_HOST_ADDRESS = "192.18.145.233"
+DB_USER_FILE = "secrets/postgres_user"
+DB_PASSWORD_FILE = "secrets/postgres_password"
 DB_NAME = "smart-home-db"
 DB_TABLE = "smart_sensors"
 
@@ -19,10 +23,9 @@ DB_USER = read_secret(DB_USER_FILE)
 DB_PASS = read_secret(DB_PASSWORD_FILE)
 CONNECTION_STRING = "postgresql://{0}:{1}@{2}:5432/{3}".format(DB_USER, DB_PASS, DB_HOST_ADDRESS, DB_NAME)
 
-print(CONNECTION_STRING)
-
 # Flask App Configuration
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = CONNECTION_STRING
 # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -59,13 +62,41 @@ def get_devices():
     Sensors = Sensor.query.all()
     return jsonify([sensor.to_dict() for sensor in Sensors])
 
-# @app.route('/devices', methods=['POST'])
-# def add_device():
-#     data = request.json
-#     new_device = Device(name=data['name'], status=data.get('status', 'off'))
-#     db.session.add(new_device)
-#     db.session.commit()
-#     return jsonify(new_device.to_dict()), 201
+
+@app.route('/new-device', methods=['POST'])
+def create_sensor():
+    data = request.json  # Expect JSON payload
+    location = data.get('location')
+    type = data.get('type')
+    state = "off"  # Default state
+    date_added = data.get('date_added')
+
+    # Validate new sensor properties
+    if not location or not type or not date_added:
+        return jsonify({"error": "Missing required parameters"}), 400
+
+    if type not in ['light', 'thermostat']:
+        return jsonify({"error": "Invalid type values. Only 'light' and 'thermostat' sensors currently supported."}), 400
+
+    # Create new sensor object
+    new_sensor = Sensor(location=location, type=type, state=state, date_added=date_added)
+
+    # Date validation
+    try:
+        datetime.strptime(date_added, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    # Attempt adding new sensor to the database
+    try:
+        db.session.add(new_sensor)
+        db.session.commit()
+        return jsonify({"message": "Sensor added successfully", "sensor": new_sensor.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error adding sensor: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+    
 
 # @app.route('/devices/<int:device_id>', methods=['PUT'])
 # def update_device(device_id):
