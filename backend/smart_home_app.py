@@ -6,8 +6,16 @@ import logging
 
 logging.basicConfig(level=logging.ERROR)
 
+from dotenv import load_dotenv
+load_dotenv()
+
+from os import getenv
 # Oracle VM2 IP
-DB_HOST_ADDRESS = "192.18.145.233"
+# DB_HOST_ADDRESS = "192.18.145.233"
+DB_HOST_ADDRESS = getenv("POSTGRES_USER")
+
+
+
 DB_USER_FILE = "secrets/postgres_user"
 DB_PASSWORD_FILE = "secrets/postgres_password"
 DB_NAME = "smart-home-db"

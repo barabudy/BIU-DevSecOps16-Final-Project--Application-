@@ -1,16 +1,16 @@
 # BIU-DevSecOps16-Final-Project-Application
 ## Description
-This repo is used for application related files as part of the final project performed at the Bar Ilan University DevSecOps course, by Stav Sabag, Adir Segev and Bar Abudi.
+This repo hosts the application for the Bar-Ilan University DevSecOps course project. It was made by Stav Sabag, Adir Segev and Bar Abudi.
 
 ## Pre-requisites
-Ensure a secrets folder exists with the required files
+Ensure a secrets folder exists with the required authentication files
 
 ## Startup
-To Start the database and backend services  run the following command:
+To Start the database and backend services run the following command:
 docker compose up -d
 
 ### Database Connection
-The smart home sensors database is hosted and accessible at IP 192.18.145.233.
+The smart home sensors database is hosted and accessible at IP 192.18.145.233
 Connections requires a username and password (./secrets/)
 
 ## Endpoint Operations
