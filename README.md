@@ -15,10 +15,10 @@ Connections requires a username and password (./secrets/)
 
 ## Endpoint Operations
 ### READ sensors
-Send a GET request to host:5001/sensors
+Send a GET request to host:5001/get-sensors
 
 ### CREATE new sensor
-Send a POST request to host:5001/new-device, include JSON payload with the following properties (non-empty):
+Send a POST request to host:5001/create-sensor, include JSON payload with the following properties (non-empty):
 location - any string accepted
 type - "thermostat" or "light" values accepted
 date_added - values in format YYYY-MM-DD accepted
@@ -29,7 +29,11 @@ JSON payload Example:
     "date_added": "2025-01-02"}
 
 ### DELETE an existing sensor
-Fill sensor deletion documentation
+Send a DELETE request to host:5001/delete-sensor, include JSON payload with the following properties (non-empty):
+id - must be an existing sensor id
+
+JSON payload Example:
+{"id": "1008"}
 
 ### UPDATE an existing sensor
 Fill sensor update documentation

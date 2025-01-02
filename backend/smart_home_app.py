@@ -6,16 +6,8 @@ import logging
 
 logging.basicConfig(level=logging.ERROR)
 
-from dotenv import load_dotenv
-load_dotenv()
-
-from os import getenv
 # Oracle VM2 IP
-# DB_HOST_ADDRESS = "192.18.145.233"
-DB_HOST_ADDRESS = getenv("POSTGRES_USER")
-
-
-
+DB_HOST_ADDRESS = "192.18.145.233"
 DB_USER_FILE = "secrets/postgres_user"
 DB_PASSWORD_FILE = "secrets/postgres_password"
 DB_NAME = "smart-home-db"
@@ -71,7 +63,7 @@ def get_devices():
     return jsonify([sensor.to_dict() for sensor in Sensors])
 
 
-@app.route('/new-device', methods=['POST'])
+@app.route('/create-sensor', methods=['POST'])
 def create_sensor():
     data = request.json  # Expect JSON payload
     location = data.get('location')
@@ -117,12 +109,32 @@ def create_sensor():
 #     db.session.commit()
 #     return jsonify(device.to_dict())
 
-# @app.route('/devices/<int:device_id>', methods=['DELETE'])
-# def delete_device(device_id):
-#     device = Device.query.get_or_404(device_id)
-#     db.session.delete(device)
-#     db.session.commit()
-#     return jsonify({"message": "Device deleted successfully"})
+# Attempt sensor deletion by ID, if it exists
+@app.route('/delete-sensor', methods=['DELETE'])
+def delete_sensor():
+    # Get sensor ID from request JSON
+    data  = request.json
+    sensor_id = data.get('id')
+
+    # Validate sensor ID exist
+    if not sensor_id:
+        return jsonify({"error": "Missing sensor ID"}), 400
+    
+    try:
+        # Query the database for the sensor
+        sensor = Sensor.query.get(sensor_id)
+
+        # Check if the sensor exists
+        if not sensor:
+            return jsonify({"error": f"Sensor with ID {sensor_id} does not exist"}), 404
+
+        db.session.delete(sensor)
+        db.session.commit()
+        return jsonify({"message": f"Sensor with ID {sensor_id} deleted successfully"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 # Main Entry
 if __name__ == '__main__':
