@@ -4,3 +4,5 @@ secrets/
 # Also ignore individual secret files
 secrets/postgres_user
 secrets/postgres_password
+
+backend/.env

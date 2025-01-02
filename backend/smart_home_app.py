@@ -9,21 +9,18 @@ logging.basicConfig(level=logging.ERROR)
 
 # Oracle VM2 IP
 DB_HOST_ADDRESS = "192.18.145.233"
-DB_USER_FILE = "secrets/postgres_user"
-DB_PASSWORD_FILE = "secrets/postgres_password"
 DB_NAME = "smart-home-db"
 DB_TABLE = "smart_sensors"
 
-# Read secrets files securely
-def read_secret(file_path):
-    with open(file_path, 'r') as file:
-        return file.read().strip()
-
 # initialize Database credentials
-# DB_USER = os.getenv('DB_USER')
-# DB_PASS = os.getenv('DB_PASS')
-DB_USER = os.getenv('DB_USER') or read_secret(DB_USER_FILE)
-DB_PASS = os.getenv('DB_PASS') or read_secret(DB_PASSWORD_FILE)
+DB_USER = os.environ.get('DB_USER')
+DB_PASS = os.environ.get('DB_PASS')
+print(DB_USER + DB_PASS)
+# Continue from here to read ENV
+
+if not DB_USER or not DB_PASS:
+    raise EnvironmentError("DB_USER or DB_PASS environment variables are not set")
+
 CONNECTION_STRING = "postgresql://{0}:{1}@{2}:5432/{3}".format(DB_USER, DB_PASS, DB_HOST_ADDRESS, DB_NAME)
 
 # Flask App Configuration
