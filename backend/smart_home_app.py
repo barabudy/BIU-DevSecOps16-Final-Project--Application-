@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from datetime import datetime # Used for date and time validation for sensors
 import logging
+import os
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -19,8 +20,10 @@ def read_secret(file_path):
         return file.read().strip()
 
 # initialize Database credentials
-DB_USER = read_secret(DB_USER_FILE)
-DB_PASS = read_secret(DB_PASSWORD_FILE)
+# DB_USER = os.getenv('DB_USER')
+# DB_PASS = os.getenv('DB_PASS')
+DB_USER = os.getenv('DB_USER') or read_secret(DB_USER_FILE)
+DB_PASS = os.getenv('DB_PASS') or read_secret(DB_PASSWORD_FILE)
 CONNECTION_STRING = "postgresql://{0}:{1}@{2}:5432/{3}".format(DB_USER, DB_PASS, DB_HOST_ADDRESS, DB_NAME)
 
 # Flask App Configuration
@@ -56,20 +59,20 @@ class Sensor(db.Model):
 def home():
     return jsonify({"message": "Welcome to the Smart Home Control Panel API!"})
 
-@app.route('/sensors', methods=['GET'])
+@app.route('/get-sensors', methods=['GET'])
 def get_devices():
-    app.logger.debug("GET / sensors called")
+    app.logger.debug("GET / get-sensors called")
     Sensors = Sensor.query.all()
     return jsonify([sensor.to_dict() for sensor in Sensors])
 
 
 @app.route('/create-sensor', methods=['POST'])
 def create_sensor():
-    data = request.json  # Expect JSON payload
+    data = request.json  # Sensor data in JSON payload
     location = data.get('location')
     type = data.get('type')
     state = "off"  # Default state
-    date_added = data.get('date_added')
+    date_added = data.get('date_added', datetime.now().strftime('%Y-%m-%d'))
 
     # Validate new sensor properties
     if not location or not type or not date_added:
@@ -85,6 +88,7 @@ def create_sensor():
     try:
         datetime.strptime(date_added, '%Y-%m-%d')
     except ValueError:
+        logging.error(f"Error occurred in {request.path}: {e}")
         return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
 
     # Attempt adding new sensor to the database
@@ -94,20 +98,49 @@ def create_sensor():
         return jsonify({"message": "Sensor added successfully", "sensor": new_sensor.to_dict()}), 201
     except Exception as e:
         db.session.rollback()
-        logging.error(f"Error adding sensor: {e}")
+        logging.error(f"Error occurred in {request.path}: {e}")
         return jsonify({"error": "Internal server error"}), 500
     
 
-# @app.route('/devices/<int:device_id>', methods=['PUT'])
-# def update_device(device_id):
-#     device = Device.query.get_or_404(device_id)
-#     data = request.json
-#     if 'name' in data:
-#         device.name = data['name']
-#     if 'status' in data:
-#         device.status = data['status']
-#     db.session.commit()
-#     return jsonify(device.to_dict())
+@app.route('/update-sensor', methods=['PUT'])
+def update_sensor():
+# Get sensor ID from request JSON
+    data  = request.json
+    sensor_id = data.get('id')
+    location = data.get('location')
+    type = data.get('type')
+    state = data.get('state')
+    # date_added = data.get('date_added')
+
+    if not sensor_id:
+        return jsonify({"error": "Sensor ID is required"}), 400
+    
+    try:
+        # Query the database for the sensor by ID
+        sensor = db.session.get(Sensor, sensor_id)
+
+        if not sensor:
+            return jsonify({"error": f"Sensor with ID {sensor_id} does not exist"}), 404
+        
+        # Update properties if they were provided with valid values
+        if location:
+            sensor.location = location
+        if type:
+            if type not in ['light', 'thermostat']:
+                return jsonify({"error": "Invalid type values. Only 'light' and 'thermostat' sensors currently supported."}), 400
+            sensor.type = type
+        if state:
+            if state not in ['on', 'off']:
+                return jsonify({"error": "Invalid state values. Only 'on' and 'off' sensors states are currently supported."}), 400
+            sensor.state = state
+
+        db.session.commit()
+        return jsonify({"message": f"Sensor with ID {sensor_id} updated successfully", "sensor": sensor.to_dict()}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error occurred in {request.path}: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # Attempt sensor deletion by ID, if it exists
 @app.route('/delete-sensor', methods=['DELETE'])
@@ -122,7 +155,7 @@ def delete_sensor():
     
     try:
         # Query the database for the sensor
-        sensor = Sensor.query.get(sensor_id)
+        sensor = db.session.get(Sensor, sensor_id)
 
         # Check if the sensor exists
         if not sensor:
@@ -134,6 +167,7 @@ def delete_sensor():
 
     except Exception as e:
         db.session.rollback()
+        logging.error(f"Error occurred in {request.path}: {e}")
         return jsonify({"error": str(e)}), 500
 
 # Main Entry

@@ -36,4 +36,15 @@ JSON payload Example:
 {"id": "1008"}
 
 ### UPDATE an existing sensor
-Fill sensor update documentation
+Send a PUT request to host:5001/update-sensor, include JSON payload with the properties you wish to change:
+id - must be an existing sensor id
+location - optional, non empty string
+state - optional, "on" or "off" accepted
+type - optional, "light" or "thermostat" accepted
+
+JSON payload Example:
+{
+    "id":"1001"
+    "location": "Basemeent",
+    "state":"off",
+    "type": "thermostat",}
