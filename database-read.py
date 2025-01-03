@@ -9,7 +9,7 @@ DB_HOST_ADDRESS = "192.18.145.233"
 def read_secret(file_path):
     with open(file_path, 'r') as file:
         return file.read().strip()
-    
+
 # initialize Database credentials
 db_user = read_secret(DB_USER_FILE)
 db_password = read_secret(DB_PASSWORD_FILE)
