@@ -28,15 +28,15 @@ services:
       timeout: 10s
       retries: 5
 
-  # backend:
-  #   image: stavsabag/smart-home:latest 
-  #   networks:
-  #     - smart-home-network
-  #   ports:
-  #     - "5001:5001"
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
+  backend:
+    image: barabudy/smart-home-app:latest
+    networks:
+      - smart-home-network
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy
 
 networks:
   smart-home-network:
