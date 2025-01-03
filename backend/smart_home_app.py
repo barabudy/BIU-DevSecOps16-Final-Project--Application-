@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from datetime import datetime # Used for date and time validation for sensors
+from dotenv import load_dotenv
 import logging
 import os
 
@@ -12,11 +13,10 @@ DB_HOST_ADDRESS = "192.18.145.233"
 DB_NAME = "smart-home-db"
 DB_TABLE = "smart_sensors"
 
-# initialize Database credentials
-DB_USER = os.environ.get('DB_USER')
-DB_PASS = os.environ.get('DB_PASS')
-print(DB_USER + DB_PASS)
-# Continue from here to read ENV
+# initialize Database credentials via .env file
+load_dotenv()
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
 
 if not DB_USER or not DB_PASS:
     raise EnvironmentError("DB_USER or DB_PASS environment variables are not set")
