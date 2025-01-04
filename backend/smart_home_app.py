@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from prometheus_client import generate_latest, Counter
 from flask_cors import CORS
 from datetime import datetime # Used for date and time validation for sensors
 from dotenv import load_dotenv
@@ -22,6 +23,7 @@ if not DB_USER or not DB_PASS:
     raise EnvironmentError("DB_USER or DB_PASS environment variables are not set")
 
 CONNECTION_STRING = "postgresql://{0}:{1}@{2}:5432/{3}".format(DB_USER, DB_PASS, DB_HOST_ADDRESS, DB_NAME)
+HTTP_REQUESTS=Counter('HTTP_requests_Total', 'Total HTTP request amount', ['endpoint','method', 'code'])
 
 # Flask App Configuration
 app = Flask(__name__)
@@ -51,13 +53,19 @@ class Sensor(db.Model):
             "date_added": self.date_added.isoformat()
         }
 
+@app.get('/metrics')
+def metrics():
+    return generate_latest()
+
 # Routes
 @app.route('/')
 def home():
+    HTTP_REQUESTS.labels(endpoint='/metrics', method='get', code='200').inc(1)
     return jsonify({"message": "Welcome to the Smart Home Control Panel API!"})
 
 @app.route('/get-sensors', methods=['GET'])
 def get_devices():
+    HTTP_REQUESTS.labels(endpoint='/metrics', method='get', code='200').inc(1)
     app.logger.debug("GET / get-sensors called")
     Sensors = Sensor.query.all()
     return jsonify([sensor.to_dict() for sensor in Sensors])
@@ -65,6 +73,7 @@ def get_devices():
 
 @app.route('/create-sensor', methods=['POST'])
 def create_sensor():
+    HTTP_REQUESTS.labels(endpoint='/metrics', method='get', code='200').inc(1)
     data = request.json  # Sensor data in JSON payload
     location = data.get('location')
     type = data.get('type')
@@ -102,6 +111,7 @@ def create_sensor():
 @app.route('/update-sensor', methods=['PUT'])
 def update_sensor():
 # Get sensor ID from request JSON
+    HTTP_REQUESTS.labels(endpoint='/metrics', method='get', code='200').inc(1)
     data  = request.json
     sensor_id = data.get('id')
     location = data.get('location')
@@ -142,6 +152,7 @@ def update_sensor():
 # Attempt sensor deletion by ID, if it exists
 @app.route('/delete-sensor', methods=['DELETE'])
 def delete_sensor():
+    HTTP_REQUESTS.labels(endpoint='/metrics', method='get', code='200').inc(1)
     # Get sensor ID from request JSON
     data  = request.json
     sensor_id = data.get('id')
