@@ -5,7 +5,7 @@ from datetime import datetime # Used for date and time validation for sensors
 from dotenv import load_dotenv
 import logging
 import os
-# Test pipeline 2
+# Test pipeline
 
 logging.basicConfig(level=logging.ERROR)
 
