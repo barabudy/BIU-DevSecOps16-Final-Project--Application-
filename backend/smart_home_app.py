@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
-from prometheus_client import generate_latest, Counter
+from prometheus_client import generate_latest, Counter, CONTENT_TYPE_LATEST
 from flask_cors import CORS
 from datetime import datetime # Used for date and time validation for sensors
 from dotenv import load_dotenv
@@ -55,8 +55,8 @@ class Sensor(db.Model):
 
 @app.get('/metrics')
 def metrics():
-    return generate_latest()
-
+    metrics_data = generate_latest()
+    return Response(metrics_data, content_type=CONTENT_TYPE_LATEST)
 # Routes
 @app.route('/')
 def home():
